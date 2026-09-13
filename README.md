@@ -6,6 +6,30 @@
 
 ---
 
+> ## ⚠️ `dist/` is not disposable build output — read this before touching it
+>
+> This repository was created by extracting a published OpenClaw release, not by cloning the
+> OpenClaw development monorepo. As a result:
+> - There is **no `tsconfig.json`** and **no working build pipeline** in this repo. 288 of the
+>   292 `scripts/*` files referenced by `package.json`'s `scripts` block do not exist on disk.
+>   Running `npm run build`, `npm run check`, or `npm test` as documented in upstream OpenClaw
+>   will fail immediately with `Cannot find module`.
+> - **All `dist/mesnium-*/` directories and `dist/control-ui/brand/mesnium-*` files are
+>   hand-authored source code, not compiled output.** There is no `.ts` source, no source map,
+>   and no other copy of this code anywhere — in this repo, in git history, or upstream. It was
+>   written directly as ES modules under `dist/` across the "Mesnium" commit history (see
+>   `git log --oneline | grep -i mesnium`).
+> - **If `dist/` is deleted or regenerated (`rm -rf dist`, a "clean" script, re-extracting a
+>   newer OpenClaw release on top of this tree), the Mesnium codebase is permanently lost and
+>   cannot be rebuilt from anything else in this repository.**
+>
+> Treat every file under `dist/mesnium-*` and `dist/control-ui/brand/mesnium-*` as you would any
+> other source file: back it up, review diffs on it, never overwrite it with an extraction or
+> build step. The rest of `dist/` (the vendored OpenClaw engine) is regular compiled output and
+> does not carry this risk — the danger is specific to the Mesnium paths listed above.
+
+---
+
 ## 1. What Claw Is
 **Claw** is a private, local-first personal AI assistant engineered for executive intelligence, calendar and communication management, research synthesis, and local task orchestration. It runs on top of the OpenClaw multi-channel runtime, communicating with Google Cloud Vertex AI via Application Default Credentials (ADC) and interfacing with Google Workspace through a dedicated native CLI (`gog`).
 
@@ -98,11 +122,19 @@ claw/
 │   ├── HEARTBEAT.md
 │   └── MEMORY.md.template
 ├── skills/                  # Bundled OpenClaw skill extensions
-├── dist/                    # Compiled OpenClaw runtime distribution
-├── src/                     # Core runtime sources
+├── dist/                    # Vendored OpenClaw engine (compiled, rebuildable)
+│                            #   + dist/mesnium-*/ — Mesnium source, hand-authored,
+│                            #     NOT compiled output. See warning at top of this file.
+├── src/                     # branding.config.ts only — not the OpenClaw source tree
 ├── openclaw.mjs             # Node.js entry point launcher
 └── package.json             # Package manifests and dependency tree
 ```
+
+> **Note on `dist/`:** this directory mixes two things that must be treated differently. Most of
+> it is the vendored OpenClaw engine, extracted from a published release — ordinary compiled
+> output. But `dist/mesnium-*/` and `dist/control-ui/brand/mesnium-*` are hand-written source
+> with no `.ts` origin and no build step that produces them. See the warning at the top of this
+> README before deleting, regenerating, or overwriting anything under `dist/`.
 
 ---
 
